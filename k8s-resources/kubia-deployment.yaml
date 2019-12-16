@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    run: kubia
+    environment: prod
+    owner: lifcn
+    project: test
+    budget: ready
+  name: kubia
+  namespace: default
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  selector:
+    matchLabels:
+      run: kubia
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        run: kubia
+        environment: prod
+        owner: lifcn
+        project: test
+        budget: ready
+    spec:
+      containers:
+      - image: luksa/kubia
+        imagePullPolicy: Always
+        name: kubia
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "128Mi"
+          limits:
+            cpu: "1000m"
+            memory: "256Mi"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 5
+          timeoutSeconds: 1
+          periodSeconds: 10
+          failureThreshold: 3
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+      nodeSelector:
+        disktype: ssd
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
